@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body { @apply font-sans text-zinc-800 bg-stone-50; }
+  h1, h2, h3 { @apply font-serif; }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-forest text-cream px-6 py-3 font-semibold tracking-wide
+    hover:bg-gold hover:text-forest transition-all duration-200 rounded-sm;
+  }
+  .btn-gold {
+    @apply bg-gold text-forest px-6 py-3 font-semibold tracking-wide
+    hover:bg-gold-light transition-all duration-200 rounded-sm;
+  }
+  .btn-outline {
+    @apply border border-cream/30 text-cream px-6 py-3 font-medium
+    hover:border-gold hover:text-gold transition-all duration-200 rounded-sm;
+  }
+  .input-field {
+    @apply w-full border border-zinc-200 rounded-sm px-4 py-3 text-sm
+    focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/20
+    transition-all duration-200 font-sans;
+  }
+  .card {
+    @apply bg-white border border-zinc-100 rounded shadow-sm hover:shadow-md
+    transition-all duration-200;
+  }
+  .section-eyebrow {
+    @apply text-xs font-semibold tracking-widest text-gold uppercase mb-3;
+  }
+  .section-title {
+    @apply font-serif text-3xl font-bold text-forest;
+  }
+}
+
+/* WhatsApp FAB */
+.whatsapp-fab {
+  @apply fixed bottom-6 right-6 bg-[#25D366] text-white w-14 h-14
+  rounded-full flex items-center justify-center text-2xl shadow-lg
+  hover:scale-110 transition-transform duration-200 z-50;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }

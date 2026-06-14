@@ -1,0 +1,169 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(CUSTOMER)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+  reviews   Review[]
+  wishlist  Wishlist[]
+  addresses Address[]
+}
+
+enum Role {
+  ADMIN
+  CUSTOMER
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  slug     String    @unique
+  icon     String?
+  products Product[]
+}
+
+model Product {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String      @unique
+  species     String
+  description String
+  price       Decimal     @db.Decimal(10,2)
+  stock       Int         @default(0)
+  status      ProductStatus @default(AVAILABLE)
+  origin      String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  categoryId  String
+  category    Category    @relation(fields:[categoryId], references:[id])
+  images      ProductImage[]
+  specs       ProductSpec[]
+  reviews     Review[]
+  orderItems  OrderItem[]
+  wishlists   Wishlist[]
+}
+
+enum ProductStatus {
+  AVAILABLE
+  OUT_OF_STOCK
+  FEATURED
+}
+
+model ProductImage {
+  id         String  @id @default(cuid())
+  url        String
+  publicId   String
+  isPrimary  Boolean @default(false)
+  productId  String
+  product    Product @relation(fields:[productId], references:[id], onDelete:Cascade)
+}
+
+model ProductSpec {
+  id        String  @id @default(cuid())
+  key       String
+  value     String
+  productId String
+  product   Product @relation(fields:[productId], references:[id], onDelete:Cascade)
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  comment   String
+  createdAt DateTime @default(now())
+  userId    String
+  user      User     @relation(fields:[userId], references:[id])
+  productId String
+  product   Product  @relation(fields:[productId], references:[id])
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  status          OrderStatus @default(PENDING)
+  subtotal        Decimal     @db.Decimal(10,2)
+  shipping        Decimal     @db.Decimal(10,2) @default(0)
+  total           Decimal     @db.Decimal(10,2)
+  trackingNumber  String?
+  notes           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  userId          String
+  user            User        @relation(fields:[userId], references:[id])
+  items           OrderItem[]
+  shippingAddress ShippingAddress?
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  quantity  Int
+  price     Decimal @db.Decimal(10,2)
+  orderId   String
+  order     Order   @relation(fields:[orderId], references:[id], onDelete:Cascade)
+  productId String
+  product   Product @relation(fields:[productId], references:[id])
+}
+
+model ShippingAddress {
+  id       String @id @default(cuid())
+  name     String
+  street   String
+  city     String
+  state    String
+  zip      String
+  country  String
+  orderId  String @unique
+  order    Order  @relation(fields:[orderId], references:[id])
+}
+
+model Address {
+  id       String  @id @default(cuid())
+  name     String
+  street   String
+  city     String
+  state    String
+  zip      String
+  country  String
+  isDefault Boolean @default(false)
+  userId   String
+  user     User    @relation(fields:[userId], references:[id])
+}
+
+model Wishlist {
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields:[userId], references:[id])
+  productId String
+  product   Product @relation(fields:[productId], references:[id])
+  @@unique([userId, productId])
+}
+
+model ContactSettings {
+  id              String  @id @default(cuid())
+  whatsappNumber  String  @default("+13202626158")
+  email           String  @default("carlloy57@gmail.com")
+  whatsappEnabled Boolean @default(true)
+  emailEnabled    Boolean @default(true)
+  autoReply       String?
+}
