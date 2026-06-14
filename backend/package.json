@@ -2,7 +2,7 @@
   "name": "peyote-spychatelics-api",
   "version": "1.0.0",
   "scripts": {
-    "build": "nest build",
+   "build": "tsc -p tsconfig.json",
     "start": "node dist/main",
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main",
@@ -52,7 +52,7 @@
     "prisma": "^5.7.0",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.9.3"
   },
   "jest": {
     "moduleFileExtensions": [
