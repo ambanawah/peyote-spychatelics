@@ -2,15 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import helmet from 'helmet';
-import * as compression from 'compression';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Security
-  app.use(helmet());
-  app.use(compression());
+  app.use(require('helmet')());
+  app.use(require('compression')());
 
   // CORS
   app.enableCors({
