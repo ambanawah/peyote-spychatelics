@@ -24,7 +24,7 @@ export class OrdersService {
 
       await resend.emails.send({
         from: 'Peyote Spychatelics <onboarding@resend.dev>',
-        to: this.config.get('SMTP_USER') || 'carllory57@gmail.com',
+        to: this.config.get('SMTP_USER') || 'ambanawah.carlos@ictuniversity.edu.cm',
         subject: `🌵 New Order ${order.orderNumber} — $${order.total}`,
         html: `
           <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#fff;border:1px solid #eee;border-radius:8px;overflow:hidden">
