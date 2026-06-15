@@ -59,7 +59,7 @@ export class ProductsService {
     });
   }
 
-  async update(id: string, dto: any) {
+  async update(id: string, dto: any, images: any[] = []) {
     return this.prisma.product.update({
       where: { id },
       data: {
@@ -71,6 +71,9 @@ export class ProductsService {
         ...(dto.status && { status: dto.status }),
         ...(dto.origin && { origin: dto.origin }),
         ...(dto.categoryId && { categoryId: dto.categoryId }),
+        ...(images.length > 0 && {
+          images: { create: images.map((img, i) => ({ url: img.url, publicId: img.publicId, isPrimary: i === 0 })) },
+        }),
       },
       include: { images: true, category: true },
     });
@@ -100,16 +103,15 @@ export class ProductsService {
       take: 10,
     });
   }
-  async addImages(productId: string, images: any[]) {
-  return this.prisma.productImage.createMany({
-    data: images.map((img, i) => ({
-      productId, url: img.url, publicId: img.publicId, isPrimary: i === 0,
-    })),
-  });
-}
 
-async removeImage(imageId: string) {
-  await this.prisma.productImage.delete({ where: { id: imageId } });
-  return { message: 'Image removed' };
-}
+  async addImages(productId: string, images: any[]) {
+    return this.prisma.productImage.createMany({
+      data: images.map((img, i) => ({ productId, url: img.url, publicId: img.publicId, isPrimary: i === 0 })),
+    });
+  }
+
+  async removeImage(imageId: string) {
+    await this.prisma.productImage.delete({ where: { id: imageId } });
+    return { message: 'Image removed' };
+  }
 }
