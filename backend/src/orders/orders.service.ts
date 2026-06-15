@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 @Injectable()
 export class OrdersService {
@@ -12,13 +12,7 @@ export class OrdersService {
 
   private async sendOrderEmail(order: any) {
     try {
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: this.config.get('SMTP_USER'),
-          pass: this.config.get('SMTP_PASS'),
-        },
-      });
+      const resend = new Resend(this.config.get('RESEND_API_KEY'));
 
       const itemsList = order.items.map((item: any) =>
         `<tr>
@@ -28,9 +22,9 @@ export class OrdersService {
         </tr>`
       ).join('');
 
-      await transporter.sendMail({
-        from: `"Peyote Spychatelics" <${this.config.get('SMTP_USER')}>`,
-        to: this.config.get('SMTP_USER'),
+      await resend.emails.send({
+        from: 'Peyote Spychatelics <onboarding@resend.dev>',
+        to: this.config.get('SMTP_USER') || 'carllory57@gmail.com',
         subject: `🌵 New Order ${order.orderNumber} — $${order.total}`,
         html: `
           <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#fff;border:1px solid #eee;border-radius:8px;overflow:hidden">
@@ -42,8 +36,7 @@ export class OrdersService {
               <h2 style="color:#1A2E1A;margin-top:0">Order ${order.orderNumber}</h2>
               <p><strong>Customer:</strong> ${order.user?.name} (${order.user?.email})</p>
               <p><strong>Date:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
-              <p><strong>Status:</strong> ${order.status}</p>
-              
+
               <h3 style="color:#1A2E1A;border-bottom:2px solid #C9A84C;padding-bottom:.5rem">Items Ordered</h3>
               <table style="width:100%;border-collapse:collapse">
                 <thead>
@@ -55,7 +48,7 @@ export class OrdersService {
                 </thead>
                 <tbody>${itemsList}</tbody>
               </table>
-              
+
               <div style="margin-top:1rem;text-align:right">
                 <p style="margin:.25rem 0;color:#666">Subtotal: $${order.subtotal}</p>
                 <p style="margin:.25rem 0;color:#666">Shipping: $${order.shipping}</p>
@@ -69,7 +62,7 @@ export class OrdersService {
               <p style="margin:.25rem 0">${order.shippingAddress?.country}</p>
 
               <div style="margin-top:2rem;background:#f9f9f9;padding:1rem;border-radius:4px;text-align:center">
-                <p style="margin:0;color:#666;font-size:.9rem">Reply to this email or contact the customer at:</p>
+                <p style="margin:0;color:#666;font-size:.9rem">Contact the customer at:</p>
                 <p style="margin:.5rem 0;font-weight:bold">${order.user?.email}</p>
               </div>
             </div>
@@ -102,9 +95,7 @@ export class OrdersService {
       },
     });
 
-    // Send email notification
     await this.sendOrderEmail(order);
-
     return order;
   }
 
