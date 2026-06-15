@@ -12,7 +12,7 @@ export class CloudinaryService {
     });
   }
 
-  async uploadImage(file: Express.Multer.File): Promise<{ url: string; publicId: string }> {
+  async uploadImage(file: any): Promise<{ url: string; publicId: string }> {
     return new Promise((resolve, reject) => {
       cloudinary.uploader.upload_stream(
         { folder: 'peyote-spychatelics', resource_type: 'image', transformation: [{ quality: 'auto', fetch_format: 'auto' }] },

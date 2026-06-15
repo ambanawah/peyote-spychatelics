@@ -22,7 +22,7 @@ export class ProductsController {
   @Post()
   @UseGuards(JwtAuthGuard, AdminGuard)
   @UseInterceptors(FilesInterceptor('images', 5, { storage: memoryStorage() }))
-  async create(@Body() body: any, @UploadedFiles() files: Express.Multer.File[] = []) {
+  async create(@Body() body: any, @UploadedFiles() files: any[] = []) {
     const images = files ? await Promise.all(files.map(f => this.cloudinary.uploadImage(f))) : [];
     return this.productsService.create(body, images);
   }
@@ -30,7 +30,7 @@ export class ProductsController {
   @Put(':id')
   @UseGuards(JwtAuthGuard, AdminGuard)
   @UseInterceptors(FilesInterceptor('images', 5, { storage: memoryStorage() }))
-  async update(@Param('id') id: string, @Body() body: any, @UploadedFiles() files: Express.Multer.File[] = []) {
+  async update(@Param('id') id: string, @Body() body: any, @UploadedFiles() files: any[] = []) {
     const images = files ? await Promise.all(files.map(f => this.cloudinary.uploadImage(f))) : [];
     return this.productsService.update(id, body, images);
   }
