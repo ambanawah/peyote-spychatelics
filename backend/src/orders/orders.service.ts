@@ -10,9 +10,12 @@ export class OrdersService {
     private config: ConfigService,
   ) {}
 
-  private async sendOrderEmail(order: any) {
+  private async sendOrderEmail(order: any, guestInfo?: any) {
     try {
       const resend = new Resend(this.config.get('RESEND_API_KEY'));
+
+      const customerName = order.user?.name || guestInfo?.name || 'Guest';
+      const customerEmail = order.user?.email || guestInfo?.email || 'N/A';
 
       const itemsList = order.items.map((item: any) =>
         `<tr>
@@ -34,7 +37,9 @@ export class OrdersService {
             </div>
             <div style="padding:2rem">
               <h2 style="color:#1A2E1A;margin-top:0">Order ${order.orderNumber}</h2>
-              <p><strong>Customer:</strong> ${order.user?.name} (${order.user?.email})</p>
+              <p><strong>Customer:</strong> ${customerName}</p>
+              <p><strong>Email:</strong> ${customerEmail}</p>
+              <p><strong>Type:</strong> ${order.user ? 'Registered Customer' : 'Guest Order'}</p>
               <p><strong>Date:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
 
               <h3 style="color:#1A2E1A;border-bottom:2px solid #C9A84C;padding-bottom:.5rem">Items Ordered</h3>
@@ -63,7 +68,7 @@ export class OrdersService {
 
               <div style="margin-top:2rem;background:#f9f9f9;padding:1rem;border-radius:4px;text-align:center">
                 <p style="margin:0;color:#666;font-size:.9rem">Contact the customer at:</p>
-                <p style="margin:.5rem 0;font-weight:bold">${order.user?.email}</p>
+                <p style="margin:.5rem 0;font-weight:bold">${customerEmail}</p>
               </div>
             </div>
           </div>
@@ -81,9 +86,26 @@ export class OrdersService {
     const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
     const shipping = subtotal > 150 ? 0 : 15;
 
+    // Guest checkout — find or create a guest user
+    let userId = dto.userId;
+    if (!userId && dto.guestEmail) {
+      let guestUser = await this.prisma.user.findUnique({ where: { email: dto.guestEmail } });
+      if (!guestUser) {
+        guestUser = await this.prisma.user.create({
+          data: {
+            email: dto.guestEmail,
+            name: dto.guestName || 'Guest',
+            password: 'guest-no-password',
+            role: 'CUSTOMER',
+          },
+        });
+      }
+      userId = guestUser.id;
+    }
+
     const order = await this.prisma.order.create({
       data: {
-        orderNumber, userId: dto.userId,
+        orderNumber, userId,
         subtotal, shipping, total: subtotal + shipping,
         items: { create: items.map(i => ({ productId:i.productId, quantity:i.quantity, price:i.price })) },
         shippingAddress: { create: dto.shippingAddress },
@@ -95,7 +117,7 @@ export class OrdersService {
       },
     });
 
-    await this.sendOrderEmail(order);
+    await this.sendOrderEmail(order, { name: dto.guestName, email: dto.guestEmail });
     return order;
   }
 
